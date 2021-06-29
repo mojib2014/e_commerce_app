@@ -1,39 +1,50 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db/index");
 
-// get all orders
-router.get("/", (req, res) => {
+const OrderService = require("../services/orderService");
+const service = new OrderService();
+
+// Get all orders
+router.get("/", async (req, res, next) => {
   try {
-    const query = "SELECT * FROM orders";
-    db.query(query, [], (err, result) => {
-      if (err) return res.status(400).send(err.message);
-      res.send(result.rows);
-    });
+    const orders = await service.getAllOrders();
+    res.send(orders);
   } catch (error) {
     console.log(error.message);
   }
 });
 
-// get an order with the given id
-router.get("/:id", (req, res) => {
+// Get an order with the given id
+router.get("/:orderId", async (req, res) => {
   try {
-    const query = `SELECT * FROM orders WHERE id = ${id}`;
-    db.query(query, [], (err, result) => {
-      if (err) return res.status(400).send(err.message);
-      res.send(result.rows[0]);
-    });
+    const { orderId } = req.params;
+    const order = await service.findById(orderId);
+    res.send(order);
   } catch (error) {
     console.log(error.message);
+  }
+});
+
+// Get user orders with user_id column
+router.get("/user-orders/:userId", async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const orders = await service.getUserOrders(userId);
+    res.send(orders);
+  } catch (err) {
+    next(err);
   }
 });
 
 // create new order
-router.post("/", (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    const { order_date, user_id, product_id } = req.body;
+    const data = req.body;
+
+    const order = await service.create(data);
+    res.send(order);
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 });
 

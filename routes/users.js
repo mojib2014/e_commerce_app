@@ -1,59 +1,59 @@
 const express = require("express");
 const router = express.Router();
-const db = require("../db");
+const UserService = require("../services/userService");
 
-// get all users
-router.get("/", (req, res) => {
-    try {
-        db.query("SELECT * FROM users", [], (err, result) => {
-             if(err) return res.status(400).send(err.message);
-             res.send(result.rows);
-         });
-    } catch (error) {
-        console.log(error.message);
-    }
+const service = new UserService();
+
+// Get all users
+router.get("/", async (req, res, next) => {
+  try {
+    const users = await service.getAll();
+
+    if (!users) return res.status(404).send("No users found!");
+
+    res.status(200).send(users);
+  } catch (error) {
+    next(error);
+  }
 });
 
-// get a user with a specific id
-router.get("/:id", (req, res) => {
-    try {
-        const query = "SELECT * FROM users WHERE id = $1";
-        db.query(query, [req.params.id], (err, result) => {
-            if(err) return res.status(400).send(err.message);
-            res.send(result.rows[0]);
-        });
-    } catch (error) {
-        console.log(error.message);
-    }
+// Get a user with a specific id
+router.get("/:id", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+
+    const user = await service.get({ id });
+    if (!user)
+      return res.status(404).send("No user with the given ID was found!");
+
+    res.status(200).send(user);
+  } catch (error) {
+    next(error);
+  }
 });
 
-// create a new user
-router.post("/", (req, res) => {
-    try {
-        const {first_name, last_name, phone, email_address, password} = req.body;
-        const insertQuery = `INSERT INTO users(first_name, last_name, phone, email_address, password)
-            VALUES('${first_name}', '${last_name}', '${phone}', '${email_address}', '${password}')`;
-        db.query(insertQuery, (err, result) => {
-            if(err) return res.status(400).send(err.message);
-            res.send(result.rows);
-        });
-    } catch (error) {
-        console.error(error.message);
-    }
+// Create a new user
+router.post("/", async (req, res, next) => {
+  try {
+    const data = req.body;
+
+    const response = await service.create({ ...data });
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
 });
 
-// remove a row with a given id
-router.delete("/:id", (req, res) => {
-    try {
-        const id = req.params.id;
-        const query = `DELETE FROM users WHERE id = ${id}`;
-        db.query(query, [], (err, result) => {
-            if(err) return res.status(400).send(err.message);
-            res.send(result.rows);
-        })
-    } catch (error) {
-        console.log(error.message);
-    }
-})
+// Remove a row with a given id
+router.delete("/:id", async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const response = await service.delete(id);
+
+    res.status(200).send(response);
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

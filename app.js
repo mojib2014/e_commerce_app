@@ -8,6 +8,8 @@ const { PORT } = require("./config");
 
 const users = require("./routes/users.js");
 const orders = require("./routes/orders");
+const products = require("./routes/products");
+const categories = require("./routes/categories");
 
 app.use(cors());
 app.use(logger("dev"));
@@ -16,6 +18,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use("/users", users);
 app.use("/orders", orders);
+app.use("/products", products);
+app.use("/categories", categories);
 
 app.get("/", (req, res) => {
   res.send("Hello World");

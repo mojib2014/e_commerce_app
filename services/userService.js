@@ -1,13 +1,14 @@
 const createError = require("http-errors");
 const UserModel = require("../models/user");
 
-const UserModelInstance = new UserModel();
+const userModelInstance = new UserModel();
 
 module.exports = class UserService {
   async getAll() {
     try {
-      const users = await UserModelInstance.findAll();
-      if (!users) throw createError(404, "User table is empty!");
+      const users = await userModelInstance.findAll();
+      if (!users)
+        throw createError(404, "There are no users currently registered!");
 
       return users;
     } catch (error) {
@@ -19,10 +20,11 @@ module.exports = class UserService {
     const { id } = data;
 
     try {
-      const user = await UserModelInstance.findOneById(id);
+      const user = await userModelInstance.findOneById(id);
 
       // If user doesn't exist, reject
-      if (!user) throw createError(404, "User record not found");
+      if (!user)
+        throw createError(404, "A User with the given ID was not found!");
 
       return user;
     } catch (error) {
@@ -32,9 +34,8 @@ module.exports = class UserService {
 
   async update(data) {
     try {
-      console.log("post data", data);
       // Check if user already exists
-      const user = UserModelInstance.update(data);
+      const user = await userModelInstance.update(data);
 
       return user;
     } catch (error) {
@@ -44,7 +45,7 @@ module.exports = class UserService {
 
   async create(data) {
     try {
-      const user = UserModelInstance.create(data);
+      const user = await userModelInstance.create(data);
 
       return user;
     } catch (error) {
@@ -54,8 +55,9 @@ module.exports = class UserService {
 
   async delete(id) {
     try {
-      const user = UserModelInstance.delete(id);
-
+      const user = await userModelInstance.delete(id);
+      if (!user)
+        throw createError(404, "A User with the given ID was not found!");
       return user;
     } catch (error) {
       throw error;

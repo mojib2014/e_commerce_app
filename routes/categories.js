@@ -4,25 +4,27 @@ const CategoryService = require("../services/categoryService");
 
 const service = new CategoryService();
 
-router.get("/", async (req, res, next) => {
-  try {
-    const categories = await service.getAll();
+module.exports = (app) => {
+  app.use("/categories", router);
 
-    res.send(categories);
-  } catch (err) {
-    next(err);
-  }
-});
+  router.get("/", async (req, res, next) => {
+    try {
+      const categories = await service.getAll();
 
-router.post("/", async (req, res, next) => {
-  try {
-    const data = req.body;
-    const category = await service.create(data);
+      res.send(categories);
+    } catch (err) {
+      next(err);
+    }
+  });
 
-    res.send(category);
-  } catch (err) {
-    next(err);
-  }
-});
+  router.post("/", async (req, res, next) => {
+    try {
+      const data = req.body;
+      const category = await service.create(data);
 
-module.exports = router;
+      res.send(category);
+    } catch (err) {
+      next(err);
+    }
+  });
+};

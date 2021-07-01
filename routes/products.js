@@ -2,42 +2,93 @@ const express = require("express");
 const router = express.Router();
 const ProductService = require("../services/productService");
 
-const service = new ProductService();
+const productService = new ProductService();
 
-// Get all products
-router.get("/", async (req, res, next) => {
-  try {
-    const products = await service.list();
+module.exports = (app) => {
+  app.use("/products", router);
 
-    res.send(products);
-  } catch (err) {
-    next(err);
-  }
-});
+  // Retrieve all products
+  router.get("/", async (req, res, next) => {
+    try {
+      const products = await productService.list();
 
-router.get("/:id", async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const products = await service.getProductByUserId(id);
+      res.send(products);
+    } catch (err) {
+      next(err);
+    }
+  });
 
-    res.send(products);
-  } catch (err) {
-    next(err);
-  }
-});
+  // Retrieve a product by a given ID
+  router.get("/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const product = await productService.getProductById(id);
 
-router.put("/:id", async (req, res, next) => {});
+      res.send(product);
+    } catch (err) {
+      next(err);
+    }
+  });
 
-router.post("/", async (req, res, next) => {
-  try {
+  // Retrieve a product by a given category ID
+  router.get("/category/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const product = await productService.getProductByCategoryId(id);
+
+      res.send(product);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Retrieve a product by a given user ID
+  router.get("/user/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const products = await productService.getProductsByUserId(id);
+
+      res.send(products);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Add a new product
+  router.post("/", async (req, res, next) => {
     const data = req.body;
-    const product = await service.create(data);
-    if (!product) return res.status(400).send("Could not insert a new record!");
+    try {
+      const product = await productService.create(data);
 
-    res.send(product);
-  } catch (err) {
-    next(err);
-  }
-});
+      res.send(product);
+    } catch (err) {
+      next(err);
+    }
+  });
 
-module.exports = router;
+  // Update a product by a given ID
+  router.put("/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+      const product = await productService.update(id, data);
+
+      res.send(product);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Remove a product by a given ID
+  router.delete("/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const product = await productService.remove(id);
+
+      res.send(product);
+    } catch (err) {
+      next(err);
+    }
+  });
+};

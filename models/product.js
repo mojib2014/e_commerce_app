@@ -8,16 +8,15 @@ module.exports = class ProductModel {
    * @return {Array|[]} [Array of products]
    */
 
-  async find(options = {}) {
+  async findAll(options = {}) {
     try {
       // Generate SQL statement
-      const statement = `SELECT * 
-                                FROM products`;
+      const statement = `SELECT * FROM products`;
       const values = [];
 
-      const result = await db.query(statement, values);
+      const result = await db.query(statement);
 
-      if (result.rows.length) return result.rows[0];
+      if (result.rows.length) return result.rows;
 
       return null;
     } catch (error) {
@@ -36,6 +35,7 @@ module.exports = class ProductModel {
       const values = [id];
 
       const result = await db.query(statement, values);
+
       if (result.rows.length) return result.rows[0];
 
       return null;
@@ -45,15 +45,34 @@ module.exports = class ProductModel {
   }
 
   /**
+   *
+   * @param {Number} category_id [categoryId]
+   * @returns {Object|null} [product record]
+   */
+  async findProductByCategoryId(id) {
+    try {
+      const statement = `SELECT * FROM products WHERE category_id = $1`;
+      const values = [id];
+
+      const result = await db.query(statement, values);
+
+      if (result.rows.length) return result.rows;
+
+      return null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  /**
    * Return a product by userID
    * @param {String} id [User ID]
    * @return {Object|null} [Product record]
    */
-  async findUsersProducts(userId) {
+  async findUserProducts(user_id) {
     try {
       const statement = `SELECT * FROM products
                            WHERE user_id = $1`;
-      const values = [userId];
+      const values = [user_id];
 
       const result = await db.query(statement, values);
 
@@ -77,6 +96,47 @@ module.exports = class ProductModel {
         pgp.helpers.insert(data, null, "products") + "RETURNING *";
       // Execute SQL statement
       const result = await db.query(statement);
+
+      if (result.rows.length) return result.rows[0];
+
+      return null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  /**
+   *
+   * @param {Number} id [Product ID]
+   * @returns {Object|null} [Product record]
+   */
+  async update(id, data) {
+    try {
+      const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
+      const statement = pgp.helpers.update(data, null, "products") + condition;
+
+      const result = await db.query(statement);
+
+      if (result.rows.length) return result.rows[0];
+
+      return null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  /**
+   * Remove a product by a given ID
+   * @param {Number} id [Product ID]
+   * @return {Object|null} [Deleted product]
+   */
+  async delete(id) {
+    try {
+      const statement = `DELETE FROM products WHERE id = $1 RETURNING *`;
+      const values = [id];
+
+      const result = await db.query(statement, values);
+
       if (result.rows.length) return result.rows[0];
 
       return null;

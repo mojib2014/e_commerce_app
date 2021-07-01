@@ -41,9 +41,7 @@ module.exports = class UserModel {
       // Execute SQL statment
       const result = await db.query(statement);
 
-      if (result.rows.length) {
-        return result.rows[0];
-      }
+      if (result.rows.length) return result.rows[0];
 
       return null;
     } catch (err) {
@@ -59,11 +57,10 @@ module.exports = class UserModel {
   async delete(id) {
     try {
       // Generate SQL statement
-      const statement = `DELETE FROM users WHERE id = $1`;
+      const statement = `DELETE FROM users WHERE id = $1 RETURNING *`;
       const values = [id];
 
       const result = await db.query(statement, values);
-
       if (result.rows.length) return result.rows[0];
 
       return null;

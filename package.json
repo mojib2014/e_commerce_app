@@ -4,8 +4,9 @@
   "description": "e-commerce application REST API built with Express, Node.js, and Postgres.",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon -r dotenv/config  app.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-db": "node -r dotenv/config setupDatabase"
   },
   "keywords": [
     "REST",

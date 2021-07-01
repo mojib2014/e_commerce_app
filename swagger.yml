@@ -1,7 +1,7 @@
-swagger: ""
+swagger: "2.0"
 
 info:
-  description: "e-commerce application REST API built with Express, Node.js, and Postgres."
+  description: "e-commerce application REST API built with Node.js/Express, and Postgres."
   version: "1.0.0"
   title: "E-commerce REST API"
 
@@ -25,10 +25,10 @@ paths:
           description: 200 Success
           schema:
             type: object
-            items: 
+            items:
         409:
           description: 409 conflict
-          schema: 
+          schema:
             type: object
             items:
         500:
@@ -37,12 +37,12 @@ paths:
             type: object
             items:
   /auth/login:
-    post: 
+    post:
       summary: "Login to a user account"
       description: "Login to a user account"
       produces:
         - "applicaiton/json"
-      parameters
+      parameters:
       responses:
         200:
           description: 200 Success
@@ -51,10 +51,10 @@ paths:
             items:
         401:
           description: 401 Unauthorized
-          schema: 
+          schema:
             type: object
             items:
-        500 
+        500:
           description: 500 Internal Server Error
           schema:
             type: object
@@ -71,27 +71,26 @@ paths:
           description: 200 Success
           schema:
             type: object
-            items: 
+            items:
         500:
           description: 500 Internal Server Error
           schema:
             type: object
             items:
-    put: 
+    put:
       summary: "Update user record"
       description: "Update user record"
       produces:
         - "application/json"
       parameters:
       responses:
-        200: 
+        200:
           description: 200 Success
-          schema: 
+          schema:
             type: object
             items:
-        500
+        500:
           description: 500 Internal Server Error
-          schema: 
+          schema:
             type: object
             items:
-        

@@ -4,23 +4,43 @@ const OrderModel = require("../models/order");
 const CartItemModel = require("../models/cartItem");
 
 module.exports = class CartService {
+  // Creates a new cart record
   async create(data) {
-    const { userId } = data;
     try {
-      const cartInstance = new CartModel();
-      const cart = await cartInstance.create(userId);
+      const cartInstance = new CartModel(data);
+      const cart = await cartInstance.create(data.user_id);
+
+      return cart;
     } catch (err) {
       throw err;
     }
   }
 
-  async loadCart(userId) {
+  // Updates an existing record by a given ID
+  async updateItem(cartItemId, data) {
     try {
-      // Load user cart by the given ID
-      const cart = await CartModel.findOneByUser(userId);
+      const cartItem = await CartItemModel.update(cartItemId, data);
+
+      return cartItem;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  // Load user cart by the given ID
+  async loadCart(user_id) {
+    try {
+      const cart = await CartModel.findOneByUserId(user_id);
+
+      if (!cart)
+        throw createError(404, "No cart was found with the given user ID!");
 
       // Load cart items and add them to the cart record
       const items = await CartItemModel.find(cart.id);
+
+      if (!items)
+        throw createError(404, "No items was found with the given cart ID!");
+
       cart.items = items;
 
       return cart;
@@ -29,13 +49,16 @@ module.exports = class CartService {
     }
   }
 
-  async addItem(userId, item) {
+  async addItem(user_id, item) {
     try {
       // Load user cart with a given ID
-      const cart = await CartModel.findOneByUser(userId);
+      const cart = await CartModel.findOneByUser(user_id);
 
       // Create cart item
-      const cartItem = await CartItemModel.create({ cartId: cart.id, ...item });
+      const cartItem = await CartItemModel.create({
+        cart_id: cart.id,
+        ...item,
+      });
 
       return cartItem;
     } catch (err) {
@@ -54,18 +77,7 @@ module.exports = class CartService {
     }
   }
 
-  async updateItem(cartItemId, data) {
-    try {
-      // Update cart item by ID
-      const cartItem = await CartItemModel.update(cartItemId, data);
-
-      return cartItem;
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async checkout(cartId, userId, paymentInfo) {
+  async checkout(cartId, user_id, paymentInfo) {
     try {
       const stripe = require("stripe")("sk_test_FOY6txFJqPQvJJQxJ8jpeLYQ");
 
@@ -78,7 +90,7 @@ module.exports = class CartService {
       }, 0);
 
       // Generate initial order
-      const orderInstance = new OrderModel({ total, userId });
+      const orderInstance = new OrderModel({ total, user_id });
       orderInstance.addItems(cartItems);
       await orderInstance.create();
 

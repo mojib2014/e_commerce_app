@@ -2,14 +2,15 @@ const express = require("express");
 const router = express.Router();
 const CategoryService = require("../services/categoryService");
 
-const service = new CategoryService();
+const categorySservice = new CategoryService();
 
 module.exports = (app) => {
   app.use("/categories", router);
 
+  // Retrieve all categories records
   router.get("/", async (req, res, next) => {
     try {
-      const categories = await service.getAll();
+      const categories = await categorySservice.getAll();
 
       res.send(categories);
     } catch (err) {
@@ -17,10 +18,38 @@ module.exports = (app) => {
     }
   });
 
+  // Retrieve a category record by a given ID
+  router.get("/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+
+      const category = await categorySservice.getCategoryById(id);
+
+      res.send(category);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Create a new category record
   router.post("/", async (req, res, next) => {
     try {
       const data = req.body;
-      const category = await service.create(data);
+      const category = await categorySservice.create(data);
+
+      res.send(category);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Update a record in categories by a given ID
+  router.put("/:id", async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const data = req.body;
+
+      const category = await categorySservice.update(id, data);
 
       res.send(category);
     } catch (err) {

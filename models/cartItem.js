@@ -4,13 +4,13 @@ const pgp = require("pg-promise")({ capSQL: true });
 module.exports = class CartItemModel {
   /**
    * Creates a new cartItems record
-   * @param {Object} data [CartItem data]
-   * @return {Object|null} [Created cartItem]
+   * @param {Object} data   [CartItem data]
+   * @return {Object|null}  [Created cartItem]
    */
   static async create(data) {
     try {
       const statement =
-        pgp.helpers.insert(data, null, "cartItems") + "RETURNING *";
+        pgp.helpers.insert(data, null, "cartitems") + "RETURNING *";
 
       const result = await db.query(statement);
       if (result.rows.length) return result.rows[0];
@@ -23,9 +23,9 @@ module.exports = class CartItemModel {
 
   /**
    * Updated existing cartItem record
-   * @param {Number} id [CartItem id]
-   * @param {Object} data [CartItem data]
-   * @return {Object|null} [Updated cartItem]
+   * @param {Number} id     [CartItem id]
+   * @param {Object} data   [CartItem data]
+   * @return {Object|null}  [Updated cartItem]
    */
   static async update(id, data) {
     try {
@@ -43,18 +43,19 @@ module.exports = class CartItemModel {
 
   /**
    * Retrieves cartItems for a cart with given cart ID
-   * @param {Number} id [Cart ID]
-   * @return {Object|null} [cartItem]
+   * @param {Number} id     [Cart ID]
+   * @return {Object|null}  [cartItem]
    */
-  static async find(cartId) {
+  static async find(cart_id) {
     try {
       const statement = `SELECT ci.quantity,
-                                    ci.id AS "cartItemId,
-                                    p.*
-                                    FROM cartItems ci
-                                    INNER JOIN products p ON p.id = ci.product_id
-                                    WHERE cart_id = $1`;
-      const values = [cartId];
+                                ci.id AS "cart_item_id",
+                                p.*
+                                FROM cartItems ci
+                                INNER JOIN products p 
+                                ON p.id = ci.product_id
+                                WHERE cart_id = $1`;
+      const values = [cart_id];
 
       const result = await db.query(statement, values);
       if (result.rows.length) return result.rows[0];
@@ -67,8 +68,8 @@ module.exports = class CartItemModel {
 
   /**
    * Removes a cart item record from a cartItem with a given cartItem ID
-   * @param {Object} id [CartItem ID]
-   * @return {Object|null} [Removed cartItem]
+   * @param {Object} id     [CartItem ID]
+   * @return {Object|null}  [Removed cartItem]
    */
   static async delete(id) {
     try {

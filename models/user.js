@@ -103,9 +103,7 @@ module.exports = class UserModel {
   async findOneById(id) {
     try {
       // Generate SQL statement
-      const statement = `SELECT *
-                         FROM users
-                         WHERE id = $1`;
+      const statement = `SELECT * FROM users WHERE id = $1`;
       const values = [id];
 
       // Execute SQL statment

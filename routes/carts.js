@@ -10,8 +10,19 @@ module.exports = (app, passport) => {
   router.get("/mine", async (req, res, next) => {
     try {
       const { id } = req.user;
+
       const cart = await cartService.loadCart(id);
 
+      res.send(cart);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.post("/mine", async (req, res, next) => {
+    try {
+      const data = req.user;
+      const cart = await cartService.create(data);
       res.send(cart);
     } catch (err) {
       next(err);
@@ -22,16 +33,6 @@ module.exports = (app, passport) => {
     try {
       const { id } = req.user;
       const cart = await cartService.update({ id });
-      res.send(cart);
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  router.post("/mine", async (req, res, next) => {
-    try {
-      const { id } = req.user;
-      const cart = await cartService.create({ userId: id });
       res.send(cart);
     } catch (err) {
       next(err);

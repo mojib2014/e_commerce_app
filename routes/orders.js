@@ -2,14 +2,14 @@ const express = require("express");
 const router = express.Router();
 
 const OrderService = require("../services/orderService");
-const service = new OrderService();
+const orderService = new OrderService();
 
 module.exports = (app) => {
   app.use("/orders", router);
   // Get all orders
   router.get("/", async (req, res, next) => {
     try {
-      const orders = await service.getAllOrders();
+      const orders = await orderService.getAllOrders();
       res.send(orders);
     } catch (error) {
       console.log(error.message);
@@ -20,7 +20,7 @@ module.exports = (app) => {
   router.get("/:orderId", async (req, res) => {
     try {
       const { orderId } = req.params;
-      const order = await service.findById(orderId);
+      const order = await orderService.findById(orderId);
       res.send(order);
     } catch (error) {
       console.log(error.message);
@@ -31,7 +31,7 @@ module.exports = (app) => {
   router.get("/user-orders/:userId", async (req, res, next) => {
     try {
       const { userId } = req.params;
-      const orders = await service.getUserOrders(userId);
+      const orders = await orderService.getUserOrders(userId);
       res.send(orders);
     } catch (err) {
       next(err);
@@ -43,7 +43,7 @@ module.exports = (app) => {
     try {
       const data = req.body;
 
-      const order = await service.create(data);
+      const order = await orderService.create(data);
       res.send(order);
     } catch (error) {
       console.log(error);

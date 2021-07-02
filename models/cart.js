@@ -1,23 +1,23 @@
-const db = require("../db");
 const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
+const db = require("../db");
 
 module.exports = class CartModel {
   constructor(data = {}) {
     this.created = data.created || moment.utc().toISOString();
     this.modified = moment.utc().toISOString();
-    this.converted = data.converted || null;
-    this.isActive = data.isActive || true;
+    // this.converted = data.converted || null;
+    // this.isActive = data.isActive || true;
   }
 
   /**
    * Creates a new cart for a user
-   * @param {Object} data [User data]
-   * @return {Object|null} [Created usre record]
+   * @param {Number} user_id [User ID]
+   * @return {Object|null} [Created cart record for a given user]
    */
-  async create(userId) {
+  async create(user_id) {
     try {
-      const data = { userId, ...this };
+      const data = { user_id, ...this };
 
       // Generate SQL statement - using helper for dynamic parameter injection
       const statement = pgp.helpers.insert(data, null, "carts") + "RETURNING *";
@@ -33,16 +33,16 @@ module.exports = class CartModel {
 
   /**
    * Loads a cart with a given user ID
-   * @param {Number} id [User ID]
+   * @param {Number} user_id [User ID]
    * @return {Object|null} [Cart record]
    */
-  static async findOneByUser(userId) {
+  static async findOneByUserId(user_id) {
     try {
-      const statement = `SELECT * FROM carts
-                            WHERE "user_id" = $1`;
-      const values = [userId];
+      const statement = `SELECT * FROM carts WHERE user_id = $1`;
+      const values = [user_id];
 
       const result = await db.query(statement, values);
+
       if (result.rows.length) return result.rows[0];
 
       return null;
@@ -58,7 +58,7 @@ module.exports = class CartModel {
    */
   static async findOneById(id) {
     try {
-      const statement = `SELECT * FROM carts WHERE "id" = $1`;
+      const statement = `SELECT * FROM carts WHERE id = $1`;
       const values = [id];
 
       const result = db.query(statement, values);

@@ -17,6 +17,7 @@ module.exports = class OrderService {
     try {
       const orderInstance = new OrderModel(data);
       const order = await orderInstance.update();
+
       return order;
     } catch (err) {
       throw err;
@@ -26,6 +27,7 @@ module.exports = class OrderService {
   async getAllOrders() {
     try {
       const orders = await OrderModel.list();
+
       return orders;
     } catch (err) {
       throw err;
@@ -36,6 +38,8 @@ module.exports = class OrderService {
     try {
       const orders = await OrderModel.findByUser(userId);
 
+      if (!orders) throw createError(404, "No orders");
+
       return orders;
     } catch (err) {
       throw err;
@@ -45,6 +49,9 @@ module.exports = class OrderService {
   async findById(orderId) {
     try {
       const order = await OrderModel.findById(orderId);
+
+      if (!order)
+        throw createError(404, "No order with the given ID was found!");
 
       return order;
     } catch (err) {

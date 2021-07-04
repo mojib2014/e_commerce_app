@@ -7,7 +7,8 @@ module.exports = class CartModel {
     this.created = data.created || moment.utc().toISOString();
     this.modified = moment.utc().toISOString();
     // this.converted = data.converted || null;
-    // this.isActive = data.isActive || true;
+    this.user_id = data.user_id;
+    this.is_active = data.is_active || true;
   }
 
   /**
@@ -15,12 +16,11 @@ module.exports = class CartModel {
    * @param {Number} user_id [User ID]
    * @return {Object|null} [Created cart record for a given user]
    */
-  async create(user_id) {
+  async create() {
     try {
-      const data = { user_id, ...this };
-
       // Generate SQL statement - using helper for dynamic parameter injection
-      const statement = pgp.helpers.insert(data, null, "carts") + "RETURNING *";
+      const statement =
+        pgp.helpers.insert({ ...this }, null, "carts") + "RETURNING *";
 
       const result = await db.query(statement);
       if (result.rows.length) return result.rows[0];

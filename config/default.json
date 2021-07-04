@@ -1,0 +1,12 @@
+{
+  "sessionSecret": "unsecureKey",
+  "db": {
+    "dbUser": "mojib2014",
+    "dbPassword": "5432",
+    "dbDatabase": "mojib2014",
+    "dbHost": "localhost",
+    "dbPort": 5432
+  },
+  "port": "5000",
+  "requiresAuth": true
+}

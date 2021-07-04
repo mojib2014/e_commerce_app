@@ -34,6 +34,8 @@ module.exports = class CategoryService {
     try {
       const categories = await categoryModelInstance.find();
 
+      if (!categories) throw createError(404, "No categories");
+
       return categories;
     } catch (err) {
       throw err;

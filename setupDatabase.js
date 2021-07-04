@@ -1,5 +1,6 @@
 const { Client } = require("pg");
-const { DB } = require("./config");
+const config = require("config");
+const winston = require("winston");
 
 (async () => {
   const usersTableStmt = `
@@ -11,20 +12,26 @@ const { DB } = require("./config");
         last_name       VARCHAR(20)   NOT NULL,
         phone           VARCHAR(13),
         google          JSON,
-        facebook        JSON
+        facebook        JSON,
+        created         DATE,
+        modified        DATE,
+        is_admin        BOOLEAN       NOT NULL
     );
     `;
 
   const addressTableStmt = `
     CREATE TABLE IF NOT EXISTS address(
         id                  INT             PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
-        street              VARCHAR(50),
-        city                VARCHAR(50),
-        zip                 INT,
+        street              VARCHAR(50)     NOT NULL,
+        city                VARCHAR(50)     NOT NULL,
+        zip                 INT             NOT NULL,
         unit_number         INT,
-        country             VARCHAR(50),
+        country             VARCHAR(50)     NOT NULL,
+        created             DATE,
+        modified            DATE,
         user_id             INT             NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        UNIQUE(user_id)
     );
     `;
 
@@ -38,14 +45,14 @@ const { DB } = require("./config");
 
   const productsTableStmt = `
     CREATE TABLE IF NOT EXISTS products(
-        id            INT           PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
-        name          VARCHAR(100)  NOT NULL,
+        id            INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+        name          VARCHAR(100)                NOT NULL,
         description   VARCHAR(200),
-        condition     VARCHAR(50)   NOT NULL,
-        quantity      INT       NOT NULL,
-        price         BIGINT        NOT NULL,
-        category_id   INT           NOT NULL,
-        user_id       INT           NOT NULL,
+        condition     VARCHAR(50)                 NOT NULL,
+        quantity      INT                         NOT NULL,
+        price         NUMERIC CHECK(price > 0)    NOT NULL,
+        category_id   INT                         NOT NULL,
+        user_id       INT                         NOT NULL,
         FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
     );
@@ -53,26 +60,26 @@ const { DB } = require("./config");
 
   const ordersTableStmt = `
     CREATE TABLE IF NOT EXISTS orders(
-        id            INT           PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
-        total         BIGINT        NOT NULL,
-        status        VARCHAR(50)   NOT NULL,
-        order_date    DATE          NOT NULL,
-        modified      DATE          NOT NULL,
-        user_id       INT           NOT NULL,
+        id            INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+        total         NUMERIC CHECK(total >= 0)   NOT NULL,
+        status        VARCHAR(50)                 NOT NULL,
+        order_date    DATE                        NOT NULL,
+        modified      DATE                        NOT NULL,
+        user_id       INT                         NOT NULL,
         FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
     );
     `;
 
   const orderItemsTableStmt = `
     CREATE TABLE IF NOT EXISTS orderItems (
-      id                INT             PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
-      created           DATE            NOT NULL,
-      quantity          INT             NOT NULL,
-      price             BIGINT             NOT NULL,
-      name              VARCHAR(50)     NOT NULL,
-      description       VARCHAR(200)    NOT NULL,
-      order_id          INT             NOT NULL,
-      product_id        INT             NOT NULL,
+      id                INT                         PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+      name              VARCHAR(50)                 NOT NULL,
+      price             NUMERIC CHECK(price > 0)    NOT NULL,
+      quantity          INT                         NOT NULL,
+      description       VARCHAR(200)                NOT NULL,
+      created           DATE                        NOT NULL,
+      order_id          INT                         NOT NULL,
+      product_id        INT                         NOT NULL,
       FOREIGN KEY(order_id) REFERENCES orders(id),
       FOREIGN KEY(product_id) REFERENCES products(id)
     )
@@ -81,10 +88,12 @@ const { DB } = require("./config");
   const cartsTableStmt = `
     CREATE TABLE IF NOT EXISTS carts (
       id              INT             PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
+      created         DATE,
+      modified        DATE,
       user_id         INT             NOT NULL,
-      created         DATE            NOT NULL,
-      modified        DATE            NOT NULL,
-      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+      is_active       BOOLEAN         NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+      UNIQUE(user_id)
     ); 
   `;
 
@@ -100,17 +109,12 @@ const { DB } = require("./config");
   `;
 
   try {
-    const db = new Client({
-      user: DB.PGUSER,
-      host: DB.PGHOST,
-      database: DB.PGDATABASE,
-      password: DB.PGPASSWORD,
-      port: DB.PGPORT,
-    });
+    const db = new Client(config.get("db"));
 
-    await db.connect();
-    // .then(() => console.log("Connected successfully to the database..."))
-    // .catch((err) => console.log(err.message));
+    await db
+      .connect()
+      .then(() => winston.info("Connected successfully to the database..."))
+      .catch((err) => winston.info(err.message));
 
     // Create tables on database
     await db.query(usersTableStmt);
@@ -124,6 +128,6 @@ const { DB } = require("./config");
 
     await db.end();
   } catch (err) {
-    console.log("ERROR CREATING ONE OR MORE TABLES: ", err);
+    winston.info("ERROR CREATING ONE OR MORE TABLES: ", err);
   }
 })();

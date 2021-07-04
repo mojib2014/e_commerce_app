@@ -9,8 +9,7 @@ module.exports = class ProductService {
       // Load products
       const products = await productModelInstance.findAll();
 
-      if (!products)
-        return createError(404, "There are currently no products!");
+      if (!products) throw createError(404, "There are currently no products!");
 
       return products;
     } catch (err) {

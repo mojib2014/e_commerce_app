@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const logger = require("../startup/logging");
 const AuthService = require("../services/authService");
 
 // Instantiate services
@@ -14,8 +15,10 @@ module.exports = (app, passport) => {
       const data = req.body;
 
       const user = await authService.register(data);
+
       res.send(user);
     } catch (err) {
+      logger.info(err);
       next(err);
     }
   });
@@ -38,6 +41,7 @@ module.exports = (app, passport) => {
         });
         res.send(user);
       } catch (err) {
+        logger.info(err);
         next(err);
       }
     },

@@ -9,6 +9,7 @@ module.exports = class CartItemModel {
    */
   static async create(data) {
     try {
+      console.log("cart item: ", data);
       const statement =
         pgp.helpers.insert(data, null, "cartitems") + "RETURNING *";
 
@@ -30,7 +31,7 @@ module.exports = class CartItemModel {
   static async update(id, data) {
     try {
       const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
-      const statement = pgp.helpers.update(data, null, "cartItems") + condition;
+      const statement = pgp.helpers.update(data, null, "cartitems") + condition;
 
       const result = await db.query(statement);
       if (result.rows.length) return result.rows[0];
@@ -50,10 +51,18 @@ module.exports = class CartItemModel {
     try {
       const statement = `SELECT ci.quantity,
                                 ci.id AS "cart_item_id",
-                                p.*
+                                p.id,
+                                p.name,
+                                p.description,
+                                p.condition,
+                                p.price,
+                                categories.category,
+                                p.user_id
                                 FROM cartItems ci
                                 INNER JOIN products p 
                                 ON p.id = ci.product_id
+                                INNER JOIN categories
+                                ON p.category_id = categories.id
                                 WHERE cart_id = $1`;
       const values = [cart_id];
 

@@ -1,16 +1,29 @@
-const db = require("../db");
+const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
+const db = require("../db");
 
 module.exports = class UserModel {
+  constructor(data = {}) {
+    this.email = data.email;
+    this.password = data.password;
+    this.first_name = data.first_name;
+    this.last_name = data.last_name;
+    this.phone = data.phone;
+    this.facebook = data.facebook;
+    this.google = data.google;
+    this.created = data.created || moment.utc().toISOString();
+    this.modified = moment.utc().toISOString();
+    this.is_admin = false;
+  }
   /**
    * Creates a new user record
-   * @param  {Object}      data [User data]
    * @return {Object|null}      [Created user record]
    */
-  async create(data) {
+  async create() {
     try {
       // Generate SQL statement - using helper for dynamic parameter injection
-      const statement = pgp.helpers.insert(data, null, "users") + "RETURNING *";
+      const statement =
+        pgp.helpers.insert({ ...this }, null, "users") + "RETURNING *";
 
       // Execute SQL statment
       const result = await db.query(statement);
@@ -30,7 +43,7 @@ module.exports = class UserModel {
    * @param  {Object}      data [User data]
    * @return {Object|null}      [Updated user record]
    */
-  async update(data) {
+  static async update(data) {
     try {
       const { id, ...params } = data;
 
@@ -54,7 +67,7 @@ module.exports = class UserModel {
    * @param {String} id [User ID]
    * @return {Object | null} [Deleted user record]
    */
-  async delete(id) {
+  static async delete(id) {
     try {
       // Generate SQL statement
       const statement = `DELETE FROM users WHERE id = $1 RETURNING *`;
@@ -74,7 +87,7 @@ module.exports = class UserModel {
    * @param  {String}      email [Email address]
    * @return {Object|null}       [User record]
    */
-  async findOneByEmail(email) {
+  static async findOneByEmail(email) {
     try {
       // Generate SQL statement
       const statement = `SELECT *
@@ -100,7 +113,7 @@ module.exports = class UserModel {
    * @param  {String}      id [User ID]
    * @return {Object|null}    [User Record]
    */
-  async findOneById(id) {
+  static async findOneById(id) {
     try {
       // Generate SQL statement
       const statement = `SELECT * FROM users WHERE id = $1`;
@@ -119,7 +132,7 @@ module.exports = class UserModel {
     }
   }
 
-  async findAll() {
+  static async findAll() {
     try {
       const statement = "SELECT * FROM users";
 

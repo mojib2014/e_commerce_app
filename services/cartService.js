@@ -8,7 +8,7 @@ module.exports = class CartService {
   async create(data) {
     try {
       const cartInstance = new CartModel(data);
-      const cart = await cartInstance.create(data.user_id);
+      const cart = await cartInstance.create();
 
       return cart;
     } catch (err) {
@@ -20,6 +20,9 @@ module.exports = class CartService {
   async updateItem(cartItemId, data) {
     try {
       const cartItem = await CartItemModel.update(cartItemId, data);
+
+      if (!cartItem)
+        throw createError(404, "No cartItem was found with given ID!");
 
       return cartItem;
     } catch (err) {
@@ -52,8 +55,9 @@ module.exports = class CartService {
   async addItem(user_id, item) {
     try {
       // Load user cart with a given ID
-      const cart = await CartModel.findOneByUser(user_id);
+      const cart = await CartModel.findOneByUserId(user_id);
 
+      if (!cart) throw createError(404, "No cart with the given ID was found!");
       // Create cart item
       const cartItem = await CartItemModel.create({
         cart_id: cart.id,
@@ -71,19 +75,24 @@ module.exports = class CartService {
       // Remove cart item by ID
       const cartItem = await CartItemModel.delete(cartItemId);
 
+      if (!cartItem)
+        throw createError(404, "No cartItem was found with the given ID!");
+
       return cartItem;
     } catch (err) {
       throw err;
     }
   }
 
-  async checkout(cartId, user_id, paymentInfo) {
+  async checkout(cart_id, user_id, paymentInfo) {
     try {
       const stripe = require("stripe")("sk_test_FOY6txFJqPQvJJQxJ8jpeLYQ");
 
       // Load cart items
-      const cartItems = await CartItemModel.find(cartId);
+      const cartItems = await CartItemModel.find(cart_id);
 
+      if (!cartItems)
+        throw createError(404, "No cartItems was found with the given ID!");
       // Generate total price from cart items
       const total = cartItems.reduce((total, item) => {
         return (total += Number(item.price));

@@ -2,6 +2,9 @@
 
 Node/Express REST API to provide typical functionality found in an ecommerce website. Users can create accounts, view products, add products to a cart, and place/view orders.
 
+[Documentation](https://e-commerce-api-node.herokuapp.com/docs/#/Users/put_users__id_)
+![documentation](resources/docs.png)
+
 ## Running the app
 
 To run locally, `npm install`, then `npm run start`

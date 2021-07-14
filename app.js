@@ -5,7 +5,7 @@ const morgan = require("morgan");
 const app = express();
 
 app.set("trust proxy", 1);
-// require("./startup/logging")();
+require("./startup/logging")();
 require("./startup/helmet")(app);
 require("./startup/bodyParser")(app);
 require("./startup/cors")(app);

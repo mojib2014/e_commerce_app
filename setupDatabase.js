@@ -110,7 +110,15 @@ const winston = require("winston");
   `;
 
   try {
-    const db = new Client(config.get("db"));
+    const db = new Client({
+      connectionString:
+        process.env.NODE_ENV === "production"
+          ? process.env.DATABASE_URL
+          : config.get("db"),
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    });
 
     await db
       .connect()
@@ -129,7 +137,6 @@ const winston = require("winston");
 
     await db.end();
   } catch (err) {
-    console.log("setupDatabase", err);
     winston.info("ERROR CREATING ONE OR MORE TABLES: ", err);
   }
 })();

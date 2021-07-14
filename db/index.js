@@ -2,7 +2,12 @@
 const config = require("config");
 const { Pool } = require("pg");
 
-const devUrl = { connectionString: config.get("db") };
+const devUrl = {
+  connectionString: config.get("db"),
+  ssl: {
+    rejectUnauthorized: false,
+  },
+};
 const proUrl = { connectionString: process.env.DATABASE_URL };
 
 const pool = new Pool(process.env.NODE_ENV === "production" ? proUrl : devUrl);

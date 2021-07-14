@@ -8,6 +8,8 @@ info:
     email: mmohammad3@outlook.com
   host: www.heroku.com
 servers:
+  - url: https://e-commerce-api-node.herokuapp.com
+    description: "production server"
   - url: http://localhost:5000
     description: localhost server is for development purposes only
 paths:

@@ -152,8 +152,8 @@ module.exports = class UserModel {
     const schema = Joi.object({
       email: Joi.string().email().trim().required(),
       password: Joi.string().min(6).required(),
-      first_name: Joi.string().min(50).required(),
-      last_name: Joi.string().min(50).required(),
+      first_name: Joi.string().max(50).required(),
+      last_name: Joi.string().max(50).required(),
       phone: Joi.string().min(10).max(13).optional(),
       google: Joi.string().optional(),
       facebook: Joi.string().optional(),

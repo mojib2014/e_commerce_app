@@ -1,4 +1,4 @@
 {
   "session_secret": "my_session_secret",
-  "db": "PGURL"
+  "db": "db_url"
 }

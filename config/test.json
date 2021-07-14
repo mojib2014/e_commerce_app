@@ -1,3 +1,3 @@
 {
-  "db": "postgres://mojib2014:5432@localhost:5432/e-comerce-test"
+  "db": "postgres://mojib2014:5432@localhost:5432/e-commerce-test"
 }

@@ -1,4 +1,0 @@
-{
-  "sessionSecret": "my_session_secret",
-  "db": "pgHerokuUrl"
-}

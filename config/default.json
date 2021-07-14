@@ -1,12 +1,6 @@
 {
-  "sessionSecret": "unsecureKey",
-  "db": {
-    "dbUser": "dbUser",
-    "dbPassword": "dbPassword",
-    "dbDatabase": "dbName",
-    "dbHost": "dbHost",
-    "dbPort": "dbPort"
-  },
+  "sessionSecret": "my_session_secret",
+  "db": "db_url",
   "port": "5000",
   "requiresAuth": true
 }

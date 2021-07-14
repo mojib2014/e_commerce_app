@@ -7,7 +7,7 @@
     "start": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "create-db": "node setupDatabase.js",
-    "heroku-prebuild": "node setupDatabase.js"
+    "heroku-postbuild": "node setupDatabase.js"
   },
   "engines": {
     "node": "14.17.3",

@@ -9,6 +9,10 @@
     "create-db": "node setupDatabase.js",
     "heroku-prebuild": "node setupDatabase.js"
   },
+  "engines": {
+    "node": "14.17.3",
+    "npm": "6.14.13"
+  },
   "keywords": [
     "REST",
     "API",

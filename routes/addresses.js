@@ -1,16 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const AddressService = require("../services/addressService");
+const Address = require("../models/address");
 const auth = require("../middlewares/auth");
-
-const addressService = new AddressService();
 
 // Retrieve an addresses record by user ID
 router.get("/user", auth, async (req, res, next) => {
   try {
     const { id } = req.user;
 
-    const address = await addressService.getAddressByUserId(id);
+    const address = await Address.getAddressByUserId(id);
+
+    if (!address)
+      return res
+        .status(404)
+        .send("An address with the given user ID was not found!");
 
     res.send(address);
   } catch (err) {
@@ -23,7 +26,12 @@ router.post("/add", auth, async (req, res, next) => {
   try {
     const data = req.body;
 
-    const address = await addressService.create(data);
+    const { error } = Address.validateAddress(data);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const addressInstance = new Address(data);
+    const address = await addressInstance.create(data);
+
     res.send(address);
   } catch (err) {
     next(err);
@@ -36,7 +44,11 @@ router.put("/update", auth, async (req, res, next) => {
     const { id } = req.user;
     const data = req.body;
 
-    const address = await addressService.update(id, data);
+    const { error } = Address.validateAddress(data);
+    if (error) return res.status(400).send(error.details[0].message);
+
+    const address = await Address.update(id, data);
+
     res.send(address);
   } catch (err) {
     next(err);

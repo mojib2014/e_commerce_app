@@ -1,96 +1,182 @@
-swagger: "2.0"
+openapi: 3.0.0
 
 info:
-  description: "e-commerce application REST API built with Node.js/Express, and Postgres."
-  version: "1.0.0"
-  title: "E-commerce REST API"
-
-schemes:
-  - http
-
-host: localhost:5000
-
-basePath: "/"
-
+  description: e-commerce application REST API built with Node.js/Express, and Postgres.
+  version: 1.0.0
+  title: E-commerce REST API
+  contact:
+    email: mmohammad3@outlook.com
+  host: www.heroku.com
+servers:
+  - url: http://localhost:5000
+    description: localhost server is for development purposes only
 paths:
   /auth/register:
     post:
-      summary: "Register a new user"
-      description: "Regsiter a new user"
-      produces:
-        - "application/json"
-      parameters:
+      tags:
+        - Users
+      summary: Registers a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - first_name
+                - last_name
+                - is_admin
+              properties:
+                email:
+                  type: string
+                  example: new_user@email.com
+                password:
+                  type: string
+                  example: 123456
+                first_name:
+                  type: string
+                  example: Mojib
+                last_name:
+                  type: string
+                  example: Mohammad
+                phone:
+                  type: string
+                  example: 4152222222
+                is_admin:
+                  type: boolean
+                  example: true or false
       responses:
         200:
-          description: 200 Success
-          schema:
-            type: object
-            items:
+          description: 200 Success and returns the created user record
         409:
-          description: 409 conflict
-          schema:
-            type: object
-            items:
+          description: 409 conflict (if the user record exists)
         500:
           description: 500 Internal Server Error
-          schema:
-            type: object
-            items:
+
   /auth/login:
     post:
-      summary: "Login to a user account"
-      description: "Login to a user account"
-      produces:
-        - "applicaiton/json"
-      parameters:
+      tags:
+        - Users
+      summary: Registers a new user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+                - is_admin
+              properties:
+                username:
+                  type: string
+                  example: new_user@email.com
+                password:
+                  type: string
+                  example: 123456
       responses:
         200:
-          description: 200 Success
+          description: 200 Success and logs in the user
           schema:
             type: object
-            items:
         401:
-          description: 401 Unauthorized
-          schema:
-            type: object
-            items:
+          description: 401 Unauthorized. Incorrect username or email
         500:
           description: 500 Internal Server Error
-          schema:
-            type: object
-            items:
-  /users/{userId}:
+
+  /users/{id}:
     get:
-      summary: "Get user record"
-      description: "Get user record"
-      produces:
-        - "application/json"
+      tags:
+        - Users
+      summary: Get a user record by a given ID
       parameters:
+        - name: id
+          in: path
+          required: true
+          description: A user ID to find a user by
+          schema:
+            type: integer
+            minimum: 1
       responses:
         200:
-          description: 200 Success
+          description: 200 Success and returns the user record
           schema:
             type: object
-            items:
+        404:
+          description: 404 If a user with the given ID doesn't exist
         500:
           description: 500 Internal Server Error
-          schema:
-            type: object
-            items:
     put:
-      summary: "Update user record"
-      description: "Update user record"
-      produces:
-        - "application/json"
+      tags:
+        - Users
+      summary: Update a user record by a given ID
+      description: Update user record
       parameters:
+        - name: id
+          in: path
+          required: true
+          description: A user ID to update
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - first_name
+                - last_name
+                - is_admin
+              properties:
+                email:
+                  type: string
+                  example: john_doe@email.com
+                password:
+                  type: string
+                  example: John1235
+                first_name:
+                  type: string
+                  example: John
+                last_name:
+                  type: string
+                  example: Doe
       responses:
         200:
-          description: 200 Success
+          description: 200 Success and returns the updated user record
           schema:
             type: object
             items:
+        404:
+          description: 404 A user with the given ID was not found
         500:
           description: 500 Internal Server Error
-          schema:
-            type: object
-            items:
+
+  /addresses/user:
+    get:
+      tags:
+        - Address
+      summary: Get a user address by a signed in user
+      description: Get a given user address record
+    responses:
+      200:
+        description: A address object for a signed in user
+        content:
+          application/json:
+            schema:
+              type: object
+              items:
+      403:
+        description: Forbidden, Please sign in
+      400:
+        description: Bad request the route doesn't exist
+      404:
+        description: A address with the given user ID was not found
+      500:
+        description: 500 Internal Server Error

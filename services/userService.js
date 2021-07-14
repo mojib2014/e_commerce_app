@@ -15,10 +15,13 @@ module.exports = class UserService {
   }
 
   // Updates an existing user record by a given ID
-  async update(data) {
+  async update(id, data) {
     try {
       // Check if user already exists
-      const user = await UserModel.update(data);
+      const user = await UserModel.update(id, data);
+
+      if (!user)
+        throw createError(404, "A user with the given ID was not found");
 
       return user;
     } catch (error) {

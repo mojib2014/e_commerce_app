@@ -12,8 +12,8 @@ const passportLoader = require("./passport");
 module.exports = (app) => {
   app.use(express.json());
   auth(app, passportLoader(app));
-  app.use("users", users);
-  app.use("addresses", addresses);
+  app.use("/users", users);
+  app.use("/addresses", addresses);
   app.use("/categories", categories);
   app.use("/products", products);
   app.use("/orders", orders);

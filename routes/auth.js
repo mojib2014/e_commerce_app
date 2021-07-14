@@ -1,7 +1,8 @@
+const Joi = require("joi");
 const express = require("express");
 const router = express.Router();
-const logger = require("../startup/logging");
 const AuthService = require("../services/authService");
+const User = require("../models/user");
 
 // Instantiate services
 const authService = new AuthService();
@@ -14,11 +15,13 @@ module.exports = (app, passport) => {
     try {
       const data = req.body;
 
+      const { error } = User.validateUser(data);
+      if (error) return res.status(400).send(error.details[0].message);
+
       const user = await authService.register(data);
 
       res.send(user);
     } catch (err) {
-      logger.info(err);
       next(err);
     }
   });
@@ -27,12 +30,15 @@ module.exports = (app, passport) => {
   router.post(
     "/login",
     passport.authenticate("local", {
-      // successRedirect: "/",
+      // successRedirect: "/products",
       failureRedirect: "/login",
       session: true,
     }),
     async (req, res, next) => {
       try {
+        const { error } = validateLogin(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
+
         const { username, password } = req.body;
 
         const user = await authService.login({
@@ -41,9 +47,16 @@ module.exports = (app, passport) => {
         });
         res.send(user);
       } catch (err) {
-        logger.info(err);
         next(err);
       }
     },
   );
 };
+
+function validateLogin(user) {
+  const schema = Joi.object({
+    username: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+  });
+  return schema.validate(user);
+}

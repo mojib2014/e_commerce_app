@@ -1,6 +1,7 @@
 const moment = require("moment");
 const db = require("../db");
 const pgp = require("pg-promise")({ capSQL: true });
+const Joi = require("joi");
 
 module.exports = class Address {
   constructor(data = {}) {
@@ -40,9 +41,10 @@ module.exports = class Address {
    * @param {Object} data   [Address data]
    * @returns {Object|null} [Updated address record]
    */
-  async update(id, data) {
+  static async update(id, data) {
     try {
       data.modified = moment.utc().toISOString();
+
       const condition = pgp.as.format("WHERE user_id = ${id} RETURNING *", {
         id,
       });
@@ -63,7 +65,7 @@ module.exports = class Address {
    * @param {Number}  id    [User ID]
    * @returns {Object|null} [Addres record]
    */
-  async getAddressByUserId(id) {
+  static async getAddressByUserId(id) {
     try {
       const statement = `SELECT * FROM address WHERE user_id = $1`;
       const values = [id];
@@ -76,5 +78,20 @@ module.exports = class Address {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateAddress(address) {
+    const schema = Joi.object({
+      street: Joi.string().max(50).required(),
+      city: Joi.string().max(50).required(),
+      zip: Joi.number().min(5).required(),
+      unit_number: Joi.number(),
+      country: Joi.string().max(50).required(),
+      created: Joi.date(),
+      modified: Joi.date(),
+      user_id: Joi.number().min(1).required(),
+    });
+
+    return schema.validate(address);
   }
 };

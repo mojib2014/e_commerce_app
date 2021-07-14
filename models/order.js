@@ -1,6 +1,7 @@
 const db = require("../db");
 const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
+const Joi = require("joi");
 const OrderItem = require("./orderItem");
 
 module.exports = class OrderModel {
@@ -13,15 +14,20 @@ module.exports = class OrderModel {
     this.user_id = data.user_id || null;
   }
 
-  addItems(items) {
+  /**
+   * Addes new items to the orderItems table
+   * @param {Object} [items]
+   * @returns {Object|null} [Created orderItem record]
+   */
+  static addItems(items) {
     this.items = items.map((item) => new OrderItem(item));
   }
 
   /**
    * Creates a new order for a user
-   * @return {Object|null}        [Created order record]
+   * @return {Object|null}  [Created order record]
    */
-  async create() {
+  static async create() {
     try {
       const { order_date, modified, status, total, user_id } = this;
 
@@ -55,7 +61,7 @@ module.exports = class OrderModel {
    * @param  {Object}      data [Order data to update]
    * @return {Object|null}      [Updated order record]
    */
-  async update() {
+  static async update() {
     try {
       const { order_date, user_id, total, modified, status } = this;
       // Generate SQL statement - using helper for dynamic parameter injection
@@ -87,7 +93,7 @@ module.exports = class OrderModel {
    * @param  {number} userId [User ID]
    * @return {Array}         [Order records]
    */
-  static async findByUser(userId) {
+  static async findByUserId(userId) {
     try {
       // Generate SQL statement
       const statement = `SELECT *
@@ -145,5 +151,17 @@ module.exports = class OrderModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateOrder(order) {
+    const schema = Joi.object({
+      total: Joi.number().min(0).required(),
+      status: Joi.string().min(5).max(50).required(),
+      order_date: Joi.date(),
+      modified: Joi.date(),
+      user_id: Joi.number().min(1).required(),
+    });
+
+    return schema.validate(order);
   }
 };

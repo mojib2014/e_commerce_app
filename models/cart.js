@@ -1,6 +1,8 @@
 const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
+const Joi = require("joi");
 const db = require("../db");
+const CartItemModel = require("../models/cartItem");
 
 module.exports = class CartModel {
   constructor(data = {}) {
@@ -28,6 +30,74 @@ module.exports = class CartModel {
       return null;
     } catch (err) {
       throw new Error(err);
+    }
+  }
+
+  // Updates an existing cart record by a given ID
+  static async updateCart(id, data) {
+    try {
+      // Add current date and time to modified property
+      data.modified = moment.utc().toISOString();
+
+      const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
+      const statement = pgp.helpers.update(data, null, "carts") + condition;
+
+      const result = await db.query(statement);
+
+      if (result.rows.length) return result.rows[0];
+
+      return null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  // Addes a cartItem record for a users cart
+  static async addCartItem(user_id, item) {
+    try {
+      // Load user cart with a given ID
+      const cart = await this.findOneByUserId(user_id);
+
+      if (!cart) throw createError(404, "No cart with the given ID was found!");
+      // Create cart item
+      const cartItem = await CartItemModel.create({
+        cart_id: cart.id,
+        ...item,
+      });
+
+      return cartItem;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  // Updates an existing record by a given ID
+  static async updateItem(cartItemId, data) {
+    try {
+      const cartItem = await CartItemModel.update(cartItemId, data);
+
+      return cartItem;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  /**
+   *
+   * @param {Number} cartItemId [CartItem ID]
+   * @returns {Object|null}     [Deleted CartItem]
+   */
+  static async removeItem(cartItemId) {
+    try {
+      // Remove cart item by ID
+      const cartItem = await CartItemModel.delete(cartItemId);
+
+      if (!cartItem)
+        throw createError(404, "No cartItem was found with the given ID!");
+
+      return cartItem;
+    } catch (err) {
+      throw err;
     }
   }
 
@@ -68,5 +138,16 @@ module.exports = class CartModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateCart(cart) {
+    const schema = Joi.object({
+      created: Joi.date(),
+      modified: Joi.date(),
+      user_id: Joi.string().min(1).required(),
+      is_active: Joi.boolean(),
+    });
+
+    return schema.validate(cart);
   }
 };

@@ -52,7 +52,7 @@ module.exports = class CartService {
     }
   }
 
-  async addItem(user_id, item) {
+  static async addItem(user_id, item) {
     try {
       // Load user cart with a given ID
       const cart = await CartModel.findOneByUserId(user_id);

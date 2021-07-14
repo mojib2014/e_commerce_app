@@ -5,17 +5,23 @@ require("express-async-errors");
 // Enable exception handling when you create your logger.
 module.exports = function () {
   winston.exceptions.handle(
+    new winston.transports.File({
+      filename: "uncaughtExceptions.log",
+      handleExceptions: true,
+    }),
+  );
+
+  winston.add(
     new winston.transports.Console({
       format: winston.format.prettyPrint({ colorize: true }),
     }),
-    new winston.transports.File({ filename: "uncaughtExceptions.log" }),
   );
+
+  winston.add(new winston.transports.File({ filename: "logfile.log" }));
 
   process.on("unhandledRejection", (ex) => {
     throw ex;
   });
-
-  winston.add(new winston.transports.File({ filename: "logfile.log" }));
 
   winston.add(
     new winston.transports.PostgreSQL({

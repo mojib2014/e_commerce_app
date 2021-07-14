@@ -1,3 +1,4 @@
+const Joi = require("joi");
 const db = require("../db");
 const pgp = require("pg-promise")({ capSQL: true });
 
@@ -143,5 +144,18 @@ module.exports = class ProductModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateProduct(prodcut) {
+    const schema = Joi.object({
+      name: Joi.string().min(5).max(100).required(),
+      description: Joi.string().min(20).max(200),
+      condition: Joi.string().max(50).required(),
+      quantity: Joi.number().min(0).required(),
+      price: Joi.number().positive().required(),
+      category_id: Joi.number().positive().required(),
+      user_id: Joi.number().positive().required(),
+    });
+    return schema.validate(product);
   }
 };

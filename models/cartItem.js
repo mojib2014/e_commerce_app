@@ -1,5 +1,6 @@
 const db = require("../db");
 const pgp = require("pg-promise")({ capSQL: true });
+const Joi = require("joi");
 
 module.exports = class CartItemModel {
   /**
@@ -9,7 +10,6 @@ module.exports = class CartItemModel {
    */
   static async create(data) {
     try {
-      console.log("cart item: ", data);
       const statement =
         pgp.helpers.insert(data, null, "cartitems") + "RETURNING *";
 
@@ -92,5 +92,15 @@ module.exports = class CartItemModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateCartItem(cartItem) {
+    const schema = Joi.object({
+      quantity: Joi.number().min(0).required(),
+      cart_id: Joi.number().min(1).required(),
+      product_id: Joi.number().min(1).required(),
+    });
+
+    return schema.validate(cartItem);
   }
 };

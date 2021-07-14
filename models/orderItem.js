@@ -1,5 +1,6 @@
 const db = require("../db");
 const moment = require("moment");
+const Joi = require("joi");
 const pgp = require("pg-promise")({ capSQL: true });
 
 module.exports = class OrderItemModel {
@@ -55,5 +56,16 @@ module.exports = class OrderItemModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateOrderItem(orderItem) {
+    const schema = Joi.object({
+      name: Joi.string().min(5).max(50).required(),
+      price: Joi.number().min(0).required(),
+      quantity: Joi.number().min(1).required(),
+      description: Joi.string().min(5).max(200).required(),
+    });
+
+    return schema.validate(orderItem);
   }
 };

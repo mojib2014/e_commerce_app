@@ -1,0 +1,8 @@
+{
+  "email": "new_user@email.com",
+  "password": "123456",
+  "first_name": "New",
+  "last_name": "User",
+  "phone": "4152222222",
+  "is_admin": "false"
+}

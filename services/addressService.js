@@ -32,6 +32,8 @@ module.exports = class AddressService {
   // Retrieves an existing address record for a given user
   async getAddressByUserId(id) {
     try {
+      if (!id) throw createError(403, "Forbidden: please sign in");
+
       const address = await addressInstance.getAddressByUserId(id);
 
       if (!address)

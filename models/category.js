@@ -1,5 +1,6 @@
 const db = require("../db");
 const pgp = require("pg-promise")({ capSQL: true });
+const Joi = require("joi");
 
 module.exports = class CategoryModel {
   /**
@@ -7,7 +8,7 @@ module.exports = class CategoryModel {
    * @param {Object} data [Category record]
    * @return {Object|null} [Created Category]
    */
-  async create(data) {
+  static async create(data) {
     try {
       const statement =
         pgp.helpers.insert(data, null, "categories") + "RETURNING *";
@@ -28,7 +29,7 @@ module.exports = class CategoryModel {
    * @param {Object} data   [Category data]
    * @returns {Object|null} [Updated Category record]
    */
-  async update(id, data) {
+  static async update(id, data) {
     try {
       const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
       const statement =
@@ -49,7 +50,7 @@ module.exports = class CategoryModel {
    * @param {null}
    * @return {Array|null} [Category records]
    */
-  async find() {
+  static async findAll() {
     try {
       const statement = `SELECT * FROM categories`;
       const result = await db.query(statement);
@@ -65,7 +66,7 @@ module.exports = class CategoryModel {
    * @param {Number} id     [Category ID]
    * @return {Object|null}  [Category record]
    */
-  async findCategoryById(id) {
+  static async findCategoryById(id) {
     try {
       const statement = `SELECT * FROM categories WHERE id = $1`;
       const values = [id];
@@ -77,5 +78,14 @@ module.exports = class CategoryModel {
     } catch (err) {
       throw new Error(err);
     }
+  }
+
+  static validateCategory(category) {
+    const schema = Joi.object({
+      category: Joi.string().min(5).max(100).required(),
+      description: Joi.string().min(5).max(200),
+    });
+
+    return schema.validate(category);
   }
 };

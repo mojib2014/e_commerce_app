@@ -7,7 +7,7 @@ const winston = require("winston");
         CREATE TABLE IF NOT EXISTS users(
         id              INT           PRIMARY KEY GENERATED ALWAYS AS IDENTITY NOT NULL,
         email           VARCHAR(100)  NOT NULL,
-        password        VARCHAR(200)   NOT NULL, 
+        password        VARCHAR(200)  NOT NULL, 
         first_name      VARCHAR(20)   NOT NULL,
         last_name       VARCHAR(20)   NOT NULL,
         phone           VARCHAR(13),
@@ -78,6 +78,7 @@ const winston = require("winston");
       quantity          INT                         NOT NULL,
       description       VARCHAR(200)                NOT NULL,
       created           DATE                        NOT NULL,
+      modified          DATE                        NOT NULL,
       order_id          INT                         NOT NULL,
       product_id        INT                         NOT NULL,
       FOREIGN KEY(order_id) REFERENCES orders(id),
@@ -114,7 +115,7 @@ const winston = require("winston");
     await db
       .connect()
       .then(() => winston.info("Connected successfully to the database..."))
-      .catch((err) => winston.info(err.message));
+      .catch((err) => winston.info(err));
 
     // Create tables on database
     await db.query(usersTableStmt);
@@ -128,6 +129,7 @@ const winston = require("winston");
 
     await db.end();
   } catch (err) {
+    console.log("setupDatabase", err);
     winston.info("ERROR CREATING ONE OR MORE TABLES: ", err);
   }
 })();

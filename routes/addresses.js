@@ -6,9 +6,9 @@ const auth = require("../middlewares/auth");
 // Retrieve an addresses record by user ID
 router.get("/user", auth, async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
 
-    const address = await Address.getAddressByUserId(id);
+    const address = await Address.getAddressByUserId(user_id);
 
     if (!address)
       return res
@@ -41,13 +41,13 @@ router.post("/add", auth, async (req, res, next) => {
 // Updates an existing address record for a given user
 router.put("/update", auth, async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
     const data = req.body;
 
     const { error } = Address.validateAddress(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const address = await Address.update(id, data);
+    const address = await Address.update(user_id, data);
 
     res.send(address);
   } catch (err) {

@@ -1,0 +1,43 @@
+body {
+  align-items: center;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
+}
+.login-container {
+  align-items: center;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  width: 30%;
+  max-width: 1000px;
+  padding: 1rem;
+}
+
+.login-container form {
+  flex-basis: 100%;
+  width: 100%;
+}
+
+.form-group {
+  width: 100%;
+  margin: 1rem 0;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.login-btn {
+  background-color: darkblue;
+  border: 1px solid darkblue;
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0;
+}

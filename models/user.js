@@ -1,7 +1,9 @@
+"use strict";
 const Joi = require("joi");
 const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
 const db = require("../db");
+const logger = require("../startup/logging");
 
 module.exports = class UserModel {
   constructor(data = {}) {
@@ -10,8 +12,8 @@ module.exports = class UserModel {
     this.first_name = data.first_name;
     this.last_name = data.last_name;
     this.phone = data.phone;
-    this.facebook = data.facebook;
-    this.google = data.google;
+    this.facebook_id = data.facebook_id;
+    this.google_id = data.google_id;
     this.created = data.created || moment.utc().toISOString();
     this.modified = moment.utc().toISOString();
     this.is_admin = data.is_admin ? "true" : "false";
@@ -35,6 +37,7 @@ module.exports = class UserModel {
 
       return null;
     } catch (err) {
+      logger.debug("create user error: ", err);
       throw new Error(err);
     }
   }
@@ -92,17 +95,13 @@ module.exports = class UserModel {
   static async findOneByEmail(email) {
     try {
       // Generate SQL statement
-      const statement = `SELECT *
-                         FROM users
-                         WHERE email = $1`;
+      const statement = `SELECT * FROM users WHERE email = $1`;
       const values = [email];
 
       // Execute SQL statment
       const result = await db.query(statement, values);
 
-      if (result.rows.length) {
-        return result.rows[0];
-      }
+      if (result.rows.length) return result.rows[0];
 
       return null;
     } catch (err) {
@@ -118,7 +117,7 @@ module.exports = class UserModel {
   static async findOneById(id) {
     try {
       // Generate SQL statement
-      const statement = `SELECT * FROM users WHERE id = $1`;
+      const statement = `SELECT * FROM users WHERE user_id = $1`;
       const values = [id];
 
       // Execute SQL statment

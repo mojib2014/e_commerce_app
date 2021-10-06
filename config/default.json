@@ -1,6 +1,6 @@
 {
-  "sessionSecret": "my_session_secret",
+  "sessionSecret": "e_commerce_session_secret",
   "db": "postgres://mojib2014:5432@localhost:5432/mojib2014",
-  "port": "5000",
+  "port": "port",
   "requiresAuth": true
 }

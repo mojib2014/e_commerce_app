@@ -6,12 +6,12 @@ const OrderItem = require("./orderItem");
 
 module.exports = class OrderModel {
   constructor(data = {}) {
-    this.order_date = data.order_date || moment.utc().toISOString();
-    this.items = data.items || [];
-    this.modified = moment.utc().toISOString();
-    this.status = data.status || "PENDING";
     this.total = data.total || 0;
+    this.status = data.status || "PENDING";
+    this.order_date = data.order_date || moment.utc().toISOString();
+    this.modified = moment.utc().toISOString();
     this.user_id = data.user_id || null;
+    this.items = data.items || [];
   }
 
   /**

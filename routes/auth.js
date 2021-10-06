@@ -1,62 +1,65 @@
-const Joi = require("joi");
+"use strict";
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
 const AuthService = require("../services/authService");
 const User = require("../models/user");
+const logger = require("../startup/logging");
 
 // Instantiate services
 const authService = new AuthService();
 
-module.exports = (app, passport) => {
-  app.use("/auth", router);
+// Registration endpoint
+router.post("/register", async (req, res, next) => {
+  try {
+    const data = req.body;
 
-  // Registration endpoint
-  router.post("/register", async (req, res, next) => {
-    try {
-      const data = req.body;
+    const { error } = User.validateUser(data);
+    if (error) return res.status(400).send(error.details[0].message);
 
-      const { error } = User.validateUser(data);
-      if (error) return res.status(400).send(error.details[0].message);
+    const user = await authService.register(data);
 
-      const user = await authService.register(data);
+    res.send(user);
+  } catch (err) {
+    next(err);
+  }
+});
 
-      res.send(user);
-    } catch (err) {
-      next(err);
+router.get("/login", (req, res) => {
+  res.render("login");
+});
+
+// Login endpoint
+router.post("/login", function (req, res, next) {
+  // If this function gets called, authentication was successful.
+  // `req.user` contains the authenticated user.
+  passport.authenticate("local", (err, user, info) => {
+    if (err) {
+      req.flash("error", err.message);
+      return res.status(500).send(err);
     }
-  });
-
-  // Login endpoint
-  router.post(
-    "/login",
-    passport.authenticate("local", {
-      // successRedirect: "/products",
-      failureRedirect: "/login",
-      session: true,
-    }),
-    async (req, res, next) => {
-      try {
-        const { error } = validateLogin(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
-
-        const { username, password } = req.body;
-
-        const user = await authService.login({
-          email: username,
-          password,
-        });
-        res.send(user);
-      } catch (err) {
-        next(err);
+    if (!user && info) {
+      req.flash("error", info.message);
+      return res.status(422).send(info);
+    }
+    req.user = user;
+    req.login(req.user, function (err) {
+      if (err) {
+        req.flash("error", err.message);
+        console.log("/login error: ", err);
+        return next(err);
       }
-    },
-  );
-};
+      req.flash("message", info.message);
+      return res.send(info);
+    });
+  })(req, res, next);
+});
 
-function validateLogin(user) {
-  const schema = Joi.object({
-    username: Joi.string().email().required(),
-    password: Joi.string().min(6).required(),
-  });
-  return schema.validate(user);
-}
+router.get("/logout", (req, res) => {
+  req.logout();
+  req.session = null;
+
+  res.send("logedout successfuly");
+});
+
+module.exports = router;

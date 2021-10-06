@@ -3,20 +3,23 @@ const pgp = require("pg-promise")({ capSQL: true });
 const Joi = require("joi");
 
 module.exports = class CategoryModel {
+  constructor(data = {}) {
+    this.category = data.category;
+    this.description = data.description;
+  }
   /**
    * Creates a new category record
-   * @param {Object} data [Category record]
    * @return {Object|null} [Created Category]
    */
-  static async create(data) {
+  async create() {
     try {
       const statement =
-        pgp.helpers.insert(data, null, "categories") + "RETURNING *";
+        pgp.helpers.insert({ ...this }, null, "categories") + "RETURNING *";
 
       const result = await db.query(statement);
+
       if (result.rows.length) return result.rows[0];
 
-      console.table(result);
       return null;
     } catch (err) {
       throw new Error(err);
@@ -24,14 +27,19 @@ module.exports = class CategoryModel {
   }
 
   /**
-   * Updates a category record by a given ID
-   * @param {Number} id     [Category ID]
+   * Updates a category record by a given category_id
+   * @param {Number} category_id     [Category category_id]
    * @param {Object} data   [Category data]
    * @returns {Object|null} [Updated Category record]
    */
-  static async update(id, data) {
+  static async update(category_id, data) {
     try {
-      const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
+      const condition = pgp.as.format(
+        "WHERE category_id = ${category_id} RETURNING *",
+        {
+          category_id,
+        },
+      );
       const statement =
         pgp.helpers.update(data, null, "categories") + condition;
 
@@ -62,14 +70,14 @@ module.exports = class CategoryModel {
   }
 
   /**
-   * Returns a category by a given ID
-   * @param {Number} id     [Category ID]
+   * Returns a category by a given category_id
+   * @param {Number} category_id     [Category category_id]
    * @return {Object|null}  [Category record]
    */
-  static async findCategoryById(id) {
+  static async findCategoryById(category_id) {
     try {
-      const statement = `SELECT * FROM categories WHERE id = $1`;
-      const values = [id];
+      const statement = `SELECT * FROM categories WHERE category_id = $1`;
+      const values = [category_id];
 
       const result = await db.query(statement, values);
       if (result.rows.length) return result.rows[0];

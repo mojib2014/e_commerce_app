@@ -23,7 +23,7 @@ module.exports = class Address {
   async create() {
     try {
       const statement =
-        pgp.helpers.insert({ ...this }, null, "address") + "RETURNING *";
+        pgp.helpers.insert({ ...this }, null, "addresses") + "RETURNING *";
 
       const result = await db.query(statement);
 
@@ -37,18 +37,21 @@ module.exports = class Address {
 
   /**
    *
-   * @param {Number} id     [User ID]
+   * @param {Number} user_id     [User user_id]
    * @param {Object} data   [Address data]
    * @returns {Object|null} [Updated address record]
    */
-  static async update(id, data) {
+  static async update(user_id, data) {
     try {
       data.modified = moment.utc().toISOString();
 
-      const condition = pgp.as.format("WHERE user_id = ${id} RETURNING *", {
-        id,
-      });
-      const statement = pgp.helpers.update(data, null, "address") + condition;
+      const condition = pgp.as.format(
+        "WHERE user_id = ${user_id} RETURNING *",
+        {
+          user_id,
+        },
+      );
+      const statement = pgp.helpers.update(data, null, "addresses") + condition;
 
       const result = await db.query(statement);
 
@@ -62,13 +65,13 @@ module.exports = class Address {
 
   /**
    * Retrieve an existing address record by user ID
-   * @param {Number}  id    [User ID]
+   * @param {Number}  user_id    [User user_id]
    * @returns {Object|null} [Addres record]
    */
-  static async getAddressByUserId(id) {
+  static async getAddressByUserId(user_id) {
     try {
-      const statement = `SELECT * FROM address WHERE user_id = $1`;
-      const values = [id];
+      const statement = `SELECT * FROM addresses WHERE user_id = $1`;
+      const values = [user_id];
 
       const result = await db.query(statement, values);
 

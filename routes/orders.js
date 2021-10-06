@@ -17,14 +17,14 @@ router.get("/", async (req, res, next) => {
 });
 
 // Retrieve an order with the given ID
-router.get("/:orderId", async (req, res, next) => {
+router.get("/:order_id", async (req, res, next) => {
   try {
-    const { orderId } = req.params;
+    const { order_id } = req.params;
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(order_id);
 
     if (!order)
-      return res.status(404).send("A order with the given ID was not found!");
+      return res.status(404).send("An order with the given ID was not found!");
 
     res.send(order);
   } catch (err) {
@@ -33,11 +33,11 @@ router.get("/:orderId", async (req, res, next) => {
 });
 
 // Retrieve user orders by user_id column
-router.get("/user-orders/:userId", async (req, res, next) => {
+router.get("/:user_id", async (req, res, next) => {
   try {
-    const { userId } = req.params;
+    const { user_id } = req.params;
 
-    const orders = await Order.findByUserId(userId);
+    const orders = await Order.findByUserId(user_id);
 
     if (!orders)
       return res.status(404).send("There are no orders for the given user!");

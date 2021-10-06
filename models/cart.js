@@ -2,7 +2,7 @@ const moment = require("moment");
 const pgp = require("pg-promise")({ capSQL: true });
 const Joi = require("joi");
 const db = require("../db");
-const CartItemModel = require("../models/cartItem");
+const CartItem = require("../models/cartItem");
 
 module.exports = class CartModel {
   constructor(data = {}) {
@@ -15,7 +15,7 @@ module.exports = class CartModel {
 
   /**
    * Creates a new cart for a user
-   * @param {Number} user_id [User ID]
+   * @param {Number} user_id [User user_id]
    * @return {Object|null} [Created cart record for a given user]
    */
   async create() {
@@ -33,13 +33,18 @@ module.exports = class CartModel {
     }
   }
 
-  // Updates an existing cart record by a given ID
-  static async updateCart(id, data) {
+  // Updates an existing cart record by a given cart_id
+  static async updateCart(cart_id, data) {
     try {
       // Add current date and time to modified property
       data.modified = moment.utc().toISOString();
 
-      const condition = pgp.as.format("WHERE id = ${id} RETURNING *", { id });
+      const condition = pgp.as.format(
+        "WHERE cart_id = ${cart_id} RETURNING *",
+        {
+          cart_id,
+        },
+      );
       const statement = pgp.helpers.update(data, null, "carts") + condition;
 
       const result = await db.query(statement);
@@ -55,15 +60,14 @@ module.exports = class CartModel {
   // Addes a cartItem record for a users cart
   static async addCartItem(user_id, item) {
     try {
-      // Load user cart with a given ID
+      // Load user cart with a given user_id
       const cart = await this.findOneByUserId(user_id);
 
       if (!cart) throw createError(404, "No cart with the given ID was found!");
       // Create cart item
-      const cartItem = await CartItemModel.create({
-        cart_id: cart.id,
-        ...item,
-      });
+      const cartItemInstance = new CartItem({ cart_id: cart.cart_id, ...item });
+
+      const cartItem = await cartItemInstance.create();
 
       return cartItem;
     } catch (err) {
@@ -71,10 +75,10 @@ module.exports = class CartModel {
     }
   }
 
-  // Updates an existing record by a given ID
-  static async updateItem(cartItemId, data) {
+  // Updates an existing cart record by a given cart_id
+  static async updateItem(cart_id, data) {
     try {
-      const cartItem = await CartItemModel.update(cartItemId, data);
+      const cartItem = await CartItem.update(cart_id, data);
 
       return cartItem;
     } catch (err) {
@@ -83,14 +87,14 @@ module.exports = class CartModel {
   }
 
   /**
-   *
-   * @param {Number} cartItemId [CartItem ID]
+   * Removes a cart_item by a cart_item_id
+   * @param {Number} cart_item_id [CartItem cart_item_id]
    * @returns {Object|null}     [Deleted CartItem]
    */
-  static async removeItem(cartItemId) {
+  static async removeCartItemItem(cart_item_id) {
     try {
-      // Remove cart item by ID
-      const cartItem = await CartItemModel.delete(cartItemId);
+      // Remove cart item by cart_item_id
+      const cartItem = await CartItem.delete(cart_item_id);
 
       if (!cartItem)
         throw createError(404, "No cartItem was found with the given ID!");
@@ -102,8 +106,8 @@ module.exports = class CartModel {
   }
 
   /**
-   * Loads a cart with a given user ID
-   * @param {Number} user_id [User ID]
+   * Loads a cart with a given user_id
+   * @param {Number} user_id [User user_id]
    * @return {Object|null} [Cart record]
    */
   static async findOneByUserId(user_id) {
@@ -122,19 +126,27 @@ module.exports = class CartModel {
   }
 
   /**
-   * Loads a cart by given cart ID
-   * @param {Number} id [Cart ID]
+   * Loads a cart by given cart_id
+   * @param {Number} cart_id [Cart cart_id]
    * @return {Object|null} [Cart record]
    */
-  static async findOneById(id) {
+  static async findOneById(cart_id) {
     try {
-      const statement = `SELECT * FROM carts WHERE id = $1`;
-      const values = [id];
+      const statement = `SELECT * FROM carts WHERE cart_id = $1`;
+      const values = [cart_id];
 
-      const result = db.query(statement, values);
+      const result = await db.query(statement, values);
+
       if (result.rows.length) return result.rows[0];
 
       return null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+
+  static async checkout(cart_id, user_id, checkoutInfo) {
+    try {
     } catch (err) {
       throw new Error(err);
     }
@@ -144,7 +156,7 @@ module.exports = class CartModel {
     const schema = Joi.object({
       created: Joi.date(),
       modified: Joi.date(),
-      user_id: Joi.string().min(1).required(),
+      user_id: Joi.number().min(1).required(),
       is_active: Joi.boolean(),
     });
 

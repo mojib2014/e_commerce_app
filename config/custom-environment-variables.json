@@ -1,4 +1,5 @@
 {
-  "session_secret": "my_session_secret",
-  "db": "db_url"
+  "dbUrl": "db_url",
+  "sessionSecret": "e_commerce_session_secret",
+  "port": "port"
 }

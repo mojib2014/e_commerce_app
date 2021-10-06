@@ -1,25 +1,15 @@
 const express = require("express");
-const winston = require("winston");
+const passport = require("passport");
+const logger = require("./startup/logging");
 const config = require("config");
-const morgan = require("morgan");
+
 const app = express();
+const port = config.get("port") || 5000;
 
+// Passport setup
 app.set("trust proxy", 1);
-require("./startup/logging")();
-require("./startup/helmet")(app);
-require("./startup/bodyParser")(app);
-require("./startup/cors")(app);
-require("./startup/cookieParser")(app);
-app.use(morgan("combined"));
-require("./startup/session")(app);
-require("./startup/routes")(app);
-require("./startup/swagger")(app);
-require("./startup/config")();
+require("./startup/express")(app, passport);
 
-const port = process.env.PORT || config.get("port");
+app.listen(port, () => logger.debug(`Listening on port ${port}...`));
 
-const server = app.listen(port, () =>
-  winston.info(`Listening on port ${port}...`),
-);
-
-module.exports = server;
+module.exports = app;

@@ -1,38 +1,54 @@
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
+const Joi = require("joi");
+const passport = require("passport"),
+  LocalStrategy = require("passport-local").Strategy;
+const bcrypt = require("bcrypt");
+const User = require("../models/user");
+const logger = require("./logging");
 
-const AuthService = require("../services/authService");
-const AuthServiceInstance = new AuthService();
+// Set method to serialize data to store in cookie
+passport.serializeUser(function (user, done) {
+  done(null, user.user_id);
+});
 
-module.exports = (app) => {
-  // Initialize passport
-  app.use(passport.initialize());
-  app.use(passport.session());
-
-  // Set method to serialize data to store in cookie
-  passport.serializeUser((user, done) => {
+// Set method to deserialize data stored in cookie and attach to req.user
+passport.deserializeUser(async function (user_id, done) {
+  try {
+    const user = await User.findOneById(user_id);
     done(null, user);
-  });
+  } catch (err) {
+    done(err, false);
+  }
+});
 
-  // Set method to deserialize data stored in cookie and attach to req.user
-  passport.deserializeUser((user, done) => {
-    done(null, user);
-  });
+// Configure local strategy to be use for local login
+passport.use(
+  new LocalStrategy(async function (username, password, done) {
+    const { error } = validateUser({ username, password });
+    if (error) return done(error, false, { message: error.details[0].message });
 
-  // Configure local strategy to be use for local login
-  passport.use(
-    new LocalStrategy(async (username, password, done) => {
-      try {
-        const user = await AuthServiceInstance.login({
-          email: username,
-          password,
-        });
-        return done(null, user);
-      } catch (err) {
-        return done(err);
+    try {
+      const user = await User.findOneByEmail(username);
+      if (!user) {
+        return done(null, false, { message: "Incorrect username." });
       }
-    }),
-  );
 
-  return passport;
-};
+      const matches = await bcrypt.compare(password, user.password);
+
+      if (!matches)
+        return done(null, false, { message: "Incorrect password." });
+
+      return done(null, user, { message: "Successfully loged in." });
+    } catch (err) {
+      console.log("pssport errror", err);
+      return done(err);
+    }
+  }),
+);
+
+function validateUser(user) {
+  const schema = Joi.object({
+    username: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+  });
+  return schema.validate(user);
+}

@@ -3,6 +3,15 @@ const db = require("../db");
 const pgp = require("pg-promise")({ capSQL: true });
 
 module.exports = class ProductModel {
+  constructor(data = {}) {
+    this.name = data.name;
+    this.description = data.description;
+    this.condition = data.condition;
+    this.quantity = data.quantity;
+    this.price = data.price;
+    this.category_id = data.category_id;
+    this.user_id = data.user_id;
+  }
   /**
    * List products
    * @param {Object} options [Query options]

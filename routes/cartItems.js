@@ -3,12 +3,12 @@ const router = express.Router();
 const CartItem = require("../models/cartItem");
 const auth = require("../middlewares/auth");
 
-// Retrieve a cartItem by a given ID
-router.get("/:id", auth, async (req, res, next) => {
+// Retrieve a cart_item by a given ID
+router.get("/:cart_item_id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { cart_item_id } = req.params;
 
-    const cartItem = await CartItem.find(id);
+    const cartItem = await CartItem.find(cart_item_id);
 
     if (!cartItem)
       return res
@@ -38,15 +38,15 @@ router.post("/", auth, async (req, res, next) => {
 });
 
 // Update an existing cartItem record by a given ID
-router.put("/:id", auth, async (req, res, next) => {
+router.put("/:cart_item_id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { cart_item_id } = req.params;
     const data = req.body;
 
     const { error } = CartItem.validateCartItem(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const cartItem = await CartItem.update(id, data);
+    const cartItem = await CartItem.update(cart_item_id, data);
 
     res.send(cartItem);
   } catch (err) {
@@ -54,11 +54,11 @@ router.put("/:id", auth, async (req, res, next) => {
   }
 });
 
-router.delete("/:id", auth, async (req, res, next) => {
+router.delete("/:cart_item_id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { cart_item_id } = req.params;
 
-    const cartItem = CartItem.delete(id);
+    const cartItem = CartItem.delete(cart_item_id);
 
     if (!cartItem)
       return res

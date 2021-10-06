@@ -17,11 +17,11 @@ router.get("/", async (req, res, next) => {
 });
 
 // Retrieve a category record by a given ID
-router.get("/:id", auth, async (req, res, next) => {
+router.get("/:category_id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { category_id } = req.params;
 
-    const category = await Category.findCategoryById(id);
+    const category = await Category.findCategoryById(category_id);
 
     if (!category)
       return res
@@ -42,7 +42,8 @@ router.post("/", auth, async (req, res, next) => {
     const { error } = Category.validateCategory(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const category = await Category.create(data);
+    const categoryInstance = new Category(data);
+    const category = await categoryInstance.create();
 
     res.send(category);
   } catch (err) {
@@ -51,15 +52,15 @@ router.post("/", auth, async (req, res, next) => {
 });
 
 // Update a record in categories by a given ID
-router.put("/:id", auth, async (req, res, next) => {
+router.put("/:category_id", auth, async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { category_id } = req.params;
     const data = req.body;
 
     const { error } = Category.validateCategory(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const category = await Category.update(id, data);
+    const category = await Category.update(category_id, data);
 
     if (!category)
       return res

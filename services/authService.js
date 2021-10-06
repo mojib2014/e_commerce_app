@@ -1,6 +1,7 @@
 const createError = require("http-errors");
 const bcrypt = require("bcrypt");
 const UserModel = require("../models/user");
+const logger = require("../startup/logging");
 
 module.exports = class AuthService {
   async register(data) {
@@ -19,6 +20,7 @@ module.exports = class AuthService {
 
       return await userModelInstance.create();
     } catch (err) {
+      logger.debug("regisetering error: ", err);
       throw createError(500, err);
     }
   }
@@ -37,6 +39,7 @@ module.exports = class AuthService {
 
       return user;
     } catch (err) {
+      logger.debug("Logging in error: ", err);
       throw createError(500, err);
     }
   }

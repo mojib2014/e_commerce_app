@@ -16,10 +16,16 @@ router.get("/", async (req, res, next) => {
 });
 
 // Retrieve a product by a given ID
-router.get("/:id", async (req, res, next) => {
+router.get("/:product_id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = await productService.getProductById(id);
+    const { product_id } = req.params;
+
+    const product = await productService.getProductById(product_id);
+
+    if (!product)
+      return res
+        .status(404)
+        .send("A product with the given product_id was not found!");
 
     res.send(product);
   } catch (err) {
@@ -28,10 +34,15 @@ router.get("/:id", async (req, res, next) => {
 });
 
 // Retrieve a product by a given category ID
-router.get("/category/:id", async (req, res, next) => {
+router.get("/category/:category_id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const product = await productService.getProductByCategoryId(id);
+    const { category_id } = req.params;
+    const product = await productService.getProductByCategoryId(category_id);
+
+    if (!product)
+      return res
+        .status(404)
+        .send("Product(s) with the given category_id was not found!");
 
     res.send(product);
   } catch (err) {
@@ -40,10 +51,15 @@ router.get("/category/:id", async (req, res, next) => {
 });
 
 // Retrieve a product by a given user ID
-router.get("/user/:id", async (req, res, next) => {
+router.get("/:user_id", async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const products = await productService.getProductsByUserId(id);
+    const { user_id } = req.params;
+    const products = await productService.getProductsByUserId(user_id);
+
+    if (!products)
+      return res
+        .status(404)
+        .send("Product(s) with the given user_id was not found!");
 
     res.send(products);
   } catch (err) {
@@ -51,7 +67,7 @@ router.get("/user/:id", async (req, res, next) => {
   }
 });
 
-// Add a new product
+// Create a new product
 router.post("/", async (req, res, next) => {
   const data = req.body;
   try {
@@ -64,11 +80,12 @@ router.post("/", async (req, res, next) => {
 });
 
 // Update a product by a given ID
-router.put("/:id", async (req, res, next) => {
+router.put("/:product_id", async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { product_id } = req.params;
     const data = req.body;
-    const product = await productService.update(id, data);
+
+    const product = await productService.update(product_id, data);
 
     res.send(product);
   } catch (err) {
@@ -77,11 +94,16 @@ router.put("/:id", async (req, res, next) => {
 });
 
 // Remove a product by a given ID
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:product_id", async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { product_id } = req.params;
 
-    const product = await productService.remove(id);
+    const product = await productService.remove(product_id);
+
+    if (!product)
+      return res
+        .status(404)
+        .send("A product with the given product_id was not found!");
 
     res.send(product);
   } catch (err) {

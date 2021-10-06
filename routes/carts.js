@@ -2,13 +2,14 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../middlewares/auth");
 const Cart = require("../models/cart");
+const CartItem = require("../models/cartItem");
 
 // Retrieve a cart by a given ID
-router.get("/:id", [auth], async (req, res, next) => {
+router.get("/:cart_id", [auth], async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { cart_id } = req.params;
 
-    const cart = await Cart.findOneById(id);
+    const cart = await Cart.findOneById(cart_id);
 
     if (!cart) return res.status(404).send("A cart by given ID was not found!");
 
@@ -19,11 +20,11 @@ router.get("/:id", [auth], async (req, res, next) => {
 });
 
 // Retrieve users cart by given ID
-router.get("/mine", [auth], async (req, res, next) => {
+router.get("/cart/mine", [auth], async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
 
-    const cart = await Cart.findOneByUserId(id);
+    const cart = await Cart.findOneByUserId(user_id);
 
     if (!cart)
       return res.status(404).send("A cart by given user ID was not found!");
@@ -35,7 +36,7 @@ router.get("/mine", [auth], async (req, res, next) => {
 });
 
 // Creates a new cart record for a given user
-router.post("/mine/add", [auth], async (req, res, next) => {
+router.post("/cart/add", [auth], async (req, res, next) => {
   try {
     const data = req.body;
 
@@ -53,19 +54,19 @@ router.post("/mine/add", [auth], async (req, res, next) => {
 });
 
 // Updates a cart record and carItem record by a user ID and cartItem ID
-router.put("/mine/update", [auth], async (req, res, next) => {
+router.put("/cart/update", [auth], async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
     const data = req.body;
 
     const { error } = Cart.validateCart(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const cart = Cart.findOneByUserId(id);
+    let cart = await Cart.findOneByUserId(user_id);
     if (!cart)
       return res.status(404).send("A cart by a given user ID was not found!");
 
-    await Cart.updateCart(cart.id, data);
+    cart = await Cart.updateCart(cart.cart_id, data);
 
     res.send(cart);
   } catch (err) {
@@ -74,15 +75,15 @@ router.put("/mine/update", [auth], async (req, res, next) => {
 });
 
 // Creates a new cart item for a specific cart
-router.post("/mine/items", [auth], async (req, res, next) => {
+router.post("/items/new", [auth], async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
     const data = req.body;
 
-    const { error } = Cart.validateCart(data);
+    const { error } = CartItem.validateCartItem(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const cartItem = await Cart.addCartItem(id, data);
+    const cartItem = await Cart.addCartItem(user_id, data);
 
     res.send(cartItem);
   } catch (err) {
@@ -90,16 +91,16 @@ router.post("/mine/items", [auth], async (req, res, next) => {
   }
 });
 
-// Updates a cartItem by a given ID
-router.put("/mine/items/:cartItemId", [auth], async (req, res, next) => {
+// Updates a cart_item by a given ID
+router.put("/items/:cart_item_id", [auth], async (req, res, next) => {
   try {
-    const { cartItemId } = req.params;
+    const { cart_item_id } = req.params;
     const data = req.body;
 
-    const { error } = Cart.validateCart(data);
+    const { error } = CartItem.validateCartItem(data);
     if (error) return res.status(400).send(error.details[0].message);
 
-    const cartItem = await Cart.updateItem(cartItemId, data);
+    const cartItem = await Cart.updateItem(cart_item_id, data);
 
     res.send(cartItem);
   } catch (err) {
@@ -108,11 +109,11 @@ router.put("/mine/items/:cartItemId", [auth], async (req, res, next) => {
 });
 
 // Removes a cartItem by a given ID
-router.delete("/mine/items/:cartItemId", [auth], async (req, res, next) => {
+router.delete("/items/:cart_item_id", [auth], async (req, res, next) => {
   try {
-    const { cartItemId } = req.params;
+    const { cart_item_id } = req.params;
 
-    const cartItem = await Cart.removeItem(cartItemId);
+    const cartItem = await Cart.removeCartItemItem(cart_item_id);
 
     res.send(cartItem);
   } catch (err) {
@@ -120,13 +121,13 @@ router.delete("/mine/items/:cartItemId", [auth], async (req, res, next) => {
   }
 });
 
-router.post("/mine/checkout", [auth], async (req, res, next) => {
+router.post("/checkout", [auth], async (req, res, next) => {
   try {
-    const { id } = req.user;
+    const { user_id } = req.user;
 
     const { cart_id, paymentInfo } = req.body;
 
-    const response = await Cart.checkout(cart_id, id, paymentInfo);
+    const response = await Cart.checkout(cart_id, user_id, paymentInfo);
 
     res.send(response);
   } catch (err) {
